@@ -1,0 +1,376 @@
+variables:
+  NSTST_NET: "some_IP"
+
+stages:
+  - deploy-nstst
+  - revoke-nstst
+  - build-projects
+  - build
+  - test
+  - releasenote
+  
+build-csharp:
+  stage: build
+  variables:
+    disablefront: "on"
+  script:
+    - echo "building start!"
+    - dotnet build
+  tags:
+    - windows-shared
+  
+test:
+  stage: test
+  variables:
+    disablefront: "on"
+  script:
+    - echo "testing..."
+    - dotnet test --filter "Licences|LicencesOld|Helpers|Factories|Validators|UserAccessCodes|GradeSettings|BuyBack|Inventory|CommonUI" --logger "console;verbosity=detailed"
+  tags:
+    - windows
+
+releasenote:
+  image: 79313595639.azurecr.io/nsys/kommitnica:latest
+  stage: releasenote
+  variables:
+    TELEGRAM_BOT_CHAT_ID: -1001530
+  script:
+    - /app/kommitnica
+  artifacts:
+    paths:
+      - /builds/nsys-tools/NSYS.TOOLS/release_note.txt
+    expire_in: 1 week
+  tags:
+    - docker
+
+
+# (tumakov): need using include after update gitlab
+## build projects artifacts
+
+diag-project:
+  stage: build-projects
+  variables:
+    PRODUCT: "Diag"
+  script:
+    - dotnet build -c Release Presentation/$PRODUCT/
+    - dotnet publish -c Release -o build/$PRODUCT Presentation/$PRODUCT/
+  artifacts:
+    paths:
+      - build/$PRODUCT
+    expire_in: 1 week
+  tags:
+    - windows-shared
+  when: manual
+  
+buyback-project:
+  stage: build-projects
+  variables:
+    PRODUCT: "BuyBack"
+  script:
+    - dotnet build -c Release Presentation/$PRODUCT/
+    - dotnet publish -c Release -o build/$PRODUCT Presentation/$PRODUCT/
+  artifacts:
+    paths:
+      - build/$PRODUCT
+    expire_in: 1 week
+  tags:
+    - windows-shared
+  when: manual
+  
+auth-project:
+  stage: build-projects
+  variables:
+    PRODUCT: "Auth"
+  script:
+    - dotnet build -c Release Presentation/$PRODUCT/
+    - dotnet publish -c Release -o build/$PRODUCT Presentation/$PRODUCT/
+  artifacts:
+    paths:
+      - build/$PRODUCT
+    expire_in: 1 week
+  tags:
+    - windows-shared
+  when: manual
+
+autograde-project:
+  stage: build-projects
+  variables:
+    PRODUCT: "Autograde"
+  script:
+    - dotnet build -c Release Presentation/$PRODUCT/
+    - dotnet publish -c Release -o build/$PRODUCT Presentation/$PRODUCT/
+  artifacts:
+    paths:
+      - build/$PRODUCT
+    expire_in: 1 week
+  tags:
+    - windows-shared
+  when: manual
+
+autograde-web-project:
+  stage: build-projects
+  variables:
+    PRODUCT: "AutogradeWeb"
+  script:
+    - dotnet build -c Release Presentation/$PRODUCT/
+    - dotnet publish -c Release -o build/$PRODUCT Presentation/$PRODUCT/
+  artifacts:
+    paths:
+      - build/$PRODUCT
+    expire_in: 1 week
+  tags:
+    - windows-shared
+  when: manual
+
+extensions-project:
+  stage: build-projects
+  variables:
+    PRODUCT: "Extensions"
+  script:
+    - dotnet build -c Release Presentation/$PRODUCT/
+    - dotnet publish -c Release -o build/$PRODUCT Presentation/$PRODUCT/
+  artifacts:
+    paths:
+      - build/$PRODUCT
+    expire_in: 1 week
+  tags:
+    - windows-shared
+  when: manual
+  
+filestorage-project:
+  stage: build-projects
+  variables:
+    PRODUCT: "FileStorage"
+  script:
+    - dotnet build -c Release Presentation/$PRODUCT/
+    - dotnet publish -c Release -o build/$PRODUCT Presentation/$PRODUCT/
+  artifacts:
+    paths:
+      - build/$PRODUCT
+    expire_in: 1 week
+  tags:
+    - windows-shared
+  when: manual
+  
+inventory-project:
+  stage: build-projects
+  variables:
+    PRODUCT: "Inventory"
+  script:
+    - dotnet build -c Release Presentation/$PRODUCT/
+    - dotnet publish -c Release -o build/$PRODUCT Presentation/$PRODUCT/
+  artifacts:
+    paths:
+      - build/$PRODUCT
+    expire_in: 1 week
+  tags:
+    - windows-shared
+  when: manual
+  
+management-project:
+  stage: build-projects
+  variables:
+    PRODUCT: "Management"
+  script:
+    - dotnet build -c Release Presentation/$PRODUCT/
+    - dotnet publish -c Release -o build/$PRODUCT Presentation/$PRODUCT/
+  artifacts:
+    paths:
+      - build/$PRODUCT
+    expire_in: 1 week
+  tags:
+    - windows-shared
+  when: manual
+  
+#test for deploy-nstst server
+
+diag-nstst:
+  stage: deploy-nstst
+  script:
+    - powershell ./DeployScripts/sitePush.ps1 -serverAddr $NSTST_NET -product "Diag" -sitename "Diag"
+  artifacts:
+    paths:
+      - build/$PRODUCT
+    expire_in: 1 week
+  tags:
+    - windows-shared
+  when: manual
+
+buyback-nstst:
+  stage: deploy-nstst
+  script:
+    - powershell ./DeployScripts/sitePush.ps1 -serverAddr $NSTST_NET -product "BuyBack" -sitename "BuyBack"
+  artifacts:
+    paths:
+      - build/$PRODUCT
+    expire_in: 1 week
+  tags:
+    - windows-shared
+  when: manual
+
+auth-nstst:
+  stage: deploy-nstst
+  script:
+    - powershell ./DeployScripts/sitePush.ps1 -serverAddr $NSTST_NET -product "Auth" -sitename "Auth"
+  artifacts:
+    paths:
+      - build/$PRODUCT
+    expire_in: 1 week
+  tags:
+    - windows-shared
+  when: manual
+
+autograde-nstst:
+  stage: deploy-nstst
+  script:
+    - powershell ./DeployScripts/sitePush.ps1 -serverAddr $NSTST_NET -product "Autograde" -sitename "Autograde"
+  artifacts:
+    paths:
+      - build/$PRODUCT
+    expire_in: 1 week
+  tags:
+    - windows-shared
+  when: manual
+
+autogradeweb-nstst:
+  stage: deploy-nstst
+  script:
+    - powershell ./DeployScripts/sitePush.ps1 -serverAddr $NSTST_NET -product "Autogradeweb" -sitename "Autogradeweb"
+  artifacts:
+    paths:
+      - build/$PRODUCT
+    expire_in: 1 week
+  tags:
+    - windows-shared
+  when: manual
+
+extensions-nstst:
+  stage: deploy-nstst
+  script:
+    - powershell ./DeployScripts/sitePush.ps1 -serverAddr $NSTST_NET -product "Extensions" -sitename "Extensions"
+  artifacts:
+    paths:
+      - build/$PRODUCT
+    expire_in: 1 week
+  tags:
+    - windows-shared
+  when: manual
+
+
+filestorage-nstst:
+  stage: deploy-nstst
+  script:
+    - powershell ./DeployScripts/sitePush.ps1 -serverAddr $NSTST_NET -product "FileStorage" -sitename "FileStorage"
+  artifacts:
+    paths:
+      - build/$PRODUCT
+    expire_in: 1 week
+  tags:
+    - windows-shared
+  when: manual
+
+inventory-nstst:
+  stage: deploy-nstst
+  script:
+    - powershell ./DeployScripts/sitePush.ps1 -serverAddr $NSTST_NET -product "Inventory" -sitename "Inventory"
+  artifacts:
+    paths:
+      - build/$PRODUCT
+    expire_in: 1 week
+  tags:
+    - windows-shared
+  when: manual
+
+management-nstst:
+  stage: deploy-nstst
+  script:
+    - powershell ./DeployScripts/sitePush.ps1 -serverAddr "${NSTST_NET}" -product "Management" -sitename "Management"
+  artifacts:
+    paths:
+      - build/$PRODUCT
+    expire_in: 1 week
+  tags:
+    - windows-shared
+  when: manual
+
+
+
+
+#test of revoking on deploy-nstst server
+
+diag-nstst.net:
+  stage: revoke-nstst
+  script:
+    - powershell ./DeployScripts/startRevoke.ps1 -serverAddr $NSTST_NET -sitename "diag"
+  tags:
+    - windows
+  when: manual
+
+buyback-nstst.net:
+  stage: revoke-nstst
+  script:
+    - powershell ./DeployScripts/startRevoke.ps1 -serverAddr $NSTST_NET -sitename "buyback"
+  tags:
+    - windows
+  when: manual
+
+auth-nstst.net:
+  stage: revoke-nstst
+  script:
+    - powershell ./DeployScripts/startRevoke.ps1 -serverAddr $NSTST_NET -sitename "auth"
+  tags:
+    - windows
+  when: manual
+
+
+autograde-nstst.net:
+  stage: revoke-nstst
+  script:
+    - powershell ./DeployScripts/startRevoke.ps1 -serverAddr $NSTST_NET -sitename "autograde"
+  tags:
+    - windows
+  when: manual
+
+
+autogradeweb-nstst.net:
+  stage: revoke-nstst
+  script:
+    - powershell ./DeployScripts/startRevoke.ps1 -serverAddr $NSTST_NET -sitename "autogradeweb"
+  tags:
+    - windows
+  when: manual
+
+
+extensions-nstst.net:
+  stage: revoke-nstst
+  script:
+    - powershell ./DeployScripts/startRevoke.ps1 -serverAddr $NSTST_NET -product -sitename "extensions"
+  tags:
+    - windows
+  when: manual
+
+filestorage-nstst.net:
+  stage: revoke-nstst
+  script:
+    - powershell ./DeployScripts/startRevoke.ps1 -serverAddr $NSTST_NET -sitename "storage"
+  tags:
+    - windows
+  when: manual
+
+
+inventory-nstst.net:
+  stage: revoke-nstst
+  script:
+    - powershell ./DeployScripts/startRevoke.ps1 -serverAddr $NSTST_NET -sitename "inventory"
+  tags:
+    - windows
+  when: manual
+
+
+management-nstst.net:
+  stage: revoke-nstst
+  script:
+    - powershell ./DeployScripts/startRevoke.ps1 -serverAddr $NSTST_NET -sitename "management"
+  tags:
+    - windows
+  when: manual
